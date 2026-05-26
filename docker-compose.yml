@@ -1,0 +1,39 @@
+services:
+  lyrion-sync:
+    build: .
+    container_name: lyrion-sync
+    restart: unless-stopped
+
+    environment:
+      # ── Lyrion Music Server ──────────────────────────────────────────────
+      LMS_HOST:       "http://10.3.3.3:9002"   # URL des LMS
+      LMS_PLAYER_ID:  "30:30:30:30:30:30"      # MAC-Adresse des Players
+      LMS_TIMEOUT:    "10"                     # HTTP-Timeout in Sekunden
+
+      # ── Zeitplanung ──────────────────────────────────────────────────────
+      # Standard-Cron-Syntax:  Minute Stunde Tag Monat Wochentag
+      # Beispiele:
+      #   "0 3 * * *"      → täglich um 03:00 Uhr
+      #   "*/30 * * * *"   → alle 30 Minuten
+      #   "0 */6 * * *"    → alle 6 Stunden
+      #   "0 2 * * 0"      → jeden Sonntag um 02:00 Uhr
+      CRON_SCHEDULE:  "0 3 * * *"
+
+      # ── Sofort-Sync beim Container-Start ────────────────────────────────
+      # "true"  → Sync wird direkt beim Start einmal ausgeführt
+      # "false" → Sync erst beim ersten planmäßigen Cron-Treffer
+      SYNC_ON_START:  "true"
+
+    volumes:
+      # Host-Pfad           : Container-Pfad
+      # Passe die linke Seite an dein System an:
+      - /volume1/Musik/:/music:ro                   # Musikquelle (read-only)
+      - /volume1/Sync/Musik0:/sync                  # Sync-Ziel
+      - /volume1/docker/lyrion-sync/data:/data      # Playlist und Log-Ausgabe
+
+    # Netzwerk des LMS muss erreichbar sein
+    # Falls LMS ebenfalls in Docker läuft, ggf. dasselbe Netzwerk angeben:
+    # network_mode: host
+    # oder:
+    # networks:
+    #   - lyrion-sync
