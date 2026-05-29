@@ -18,8 +18,8 @@ import requests
 # ---------------------------------------------------------------------------
 # Konfiguration aus Environment-Variablen
 # ---------------------------------------------------------------------------
-LMS_HOST        = os.environ.get("LMS_HOST",        "http://10.3.3.34:9002")
-LMS_PLAYER_ID   = os.environ.get("LMS_PLAYER_ID",   "38:05:25:37:c0:40")
+LMS_HOST        = os.environ.get("LMS_HOST",        "http://10.3.3.3:9002")
+LMS_PLAYER_ID   = os.environ.get("LMS_PLAYER_ID",   "30:30:30:30:30:30")
 PLAYLIST_FILE   = os.environ.get("PLAYLIST_FILE",   "/data/playlist.txt")
 MUSIC_BASE_PATH = os.environ.get("MUSIC_BASE_PATH", "/music")
 MUSIC_SYNC_PATH = os.environ.get("MUSIC_SYNC_PATH", "/sync")
@@ -39,7 +39,7 @@ def setup_logging() -> None:
 
     # Dateiname: 2026-05-26_14-30-00_LyrionFavoritesSync.log
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    log_file  = os.path.join(LOG_DIR, f"{timestamp}_LyrionFavoritesSync.log")
+    log_file  = os.path.join(LOG_DIR, f"{timestamp}_lyrion-sync.log")
 
     formatter = logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE)
 
@@ -52,7 +52,7 @@ def setup_logging() -> None:
 
     # Alte Log-Dateien löschen (älter als 5 Tage)
     cutoff = datetime.now() - timedelta(days=5)
-    for old in glob.glob(os.path.join(LOG_DIR, "*_LyrionFavoritesSync.log")):
+    for old in glob.glob(os.path.join(LOG_DIR, "*lyrion-sync.log")):
         try:
             # Datum aus dem Dateinamen parsen: YYYY-MM-DD_HH-MM-SS_...
             basename  = os.path.basename(old)
@@ -65,7 +65,7 @@ def setup_logging() -> None:
             pass   # unbekanntes Format → ignorieren
 
 setup_logging()
-log = logging.getLogger("lms-sync")
+log = logging.getLogger("lyrion-sync")
 
 JSONRPC_URL = f"{LMS_HOST}/jsonrpc.js"
 HEADERS     = {"Content-Type": "application/json"}
