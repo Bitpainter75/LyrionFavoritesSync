@@ -60,7 +60,7 @@ def setup_logging() -> None:
             file_dt   = datetime.strptime(date_part, "%Y-%m-%d_%H-%M-%S")
             if file_dt < cutoff:
                 os.remove(old)
-                logging.getLogger("lms-sync").info("Altes Log gelöscht: %s", basename)
+                logging.getLogger("lyrion-sync").info("Altes Log gelöscht: %s", basename)
         except (ValueError, OSError):
             pass   # unbekanntes Format → ignorieren
 
