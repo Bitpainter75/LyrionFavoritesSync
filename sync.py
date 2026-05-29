@@ -37,9 +37,9 @@ def setup_logging() -> None:
     """Legt eine neue Log-Datei für diesen Lauf an und räumt alte auf."""
     os.makedirs(LOG_DIR, exist_ok=True)
 
-    # Dateiname: 2026-05-26_14-30-00_lyrion-sync.log
+    # Dateiname: 2026-05-26_14-30-00_LyrionFavoritesSync.log
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    log_file  = os.path.join(LOG_DIR, f"{timestamp}_lyrion-sync.log")
+    log_file  = os.path.join(LOG_DIR, f"{timestamp}_LyrionFavoritesSync.log")
 
     formatter = logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE)
 
@@ -52,7 +52,7 @@ def setup_logging() -> None:
 
     # Alte Log-Dateien löschen (älter als 5 Tage)
     cutoff = datetime.now() - timedelta(days=5)
-    for old in glob.glob(os.path.join(LOG_DIR, "*_lyrion-sync.log")):
+    for old in glob.glob(os.path.join(LOG_DIR, "*_LyrionFavoritesSync.log")):
         try:
             # Datum aus dem Dateinamen parsen: YYYY-MM-DD_HH-MM-SS_...
             basename  = os.path.basename(old)
@@ -60,12 +60,12 @@ def setup_logging() -> None:
             file_dt   = datetime.strptime(date_part, "%Y-%m-%d_%H-%M-%S")
             if file_dt < cutoff:
                 os.remove(old)
-                logging.getLogger("lyrion-sync").info("Altes Log gelöscht: %s", basename)
+                logging.getLogger("lms-sync").info("Altes Log gelöscht: %s", basename)
         except (ValueError, OSError):
             pass   # unbekanntes Format → ignorieren
 
 setup_logging()
-log = logging.getLogger("lyrion-sync")
+log = logging.getLogger("lms-sync")
 
 JSONRPC_URL = f"{LMS_HOST}/jsonrpc.js"
 HEADERS     = {"Content-Type": "application/json"}
@@ -246,9 +246,18 @@ def run_sync() -> None:
     # 6 — rsync ausführen
     rsync_cmd = [
         "rsync",
-        "-av", "--stats",
+        # -r  rekursiv
+        # -l  Symlinks erhalten
+        # -t  Zeitstempel erhalten
+        # -v  verbose
+        # KEIN -a, da -a auch -o (owner) und -p (permissions) enthält,
+        # was die Berechtigungen des Zielordners überschreiben würde.
+        "-rltv", "--stats",
         "--size-only",
         "--delete-excluded",
+        "--no-perms",      # Berechtigungen nicht vom Quell-Mount übernehmen
+        "--no-owner",      # Besitzer nicht überschreiben
+        "--no-group",      # Gruppe nicht überschreiben
         f"--filter=. {PLAYLIST_FILE}",
         f"{MUSIC_BASE_PATH}/",
         f"{MUSIC_SYNC_PATH}/",
